@@ -32,8 +32,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define UART_TX_TIMEOUT 100
-#define RX_BUFF_SIZE 500
+#define UART_TX_TIMEOUT			100
+#define RX_BUFF_SIZE			500
+#define AT_COMM_TX_BUFF_SIZE	25
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,6 +53,7 @@ DMA_HandleTypeDef hdma_usart1_rx;
 char                hello[]         		= "Hello! Test_Swarm_001_G071RB\n" ;
 HAL_StatusTypeDef   uart_status ;
 uint8_t             rx_buff[RX_BUFF_SIZE] ;
+char				tx_buff[AT_COMM_TX_BUFF_SIZE] ;
 
 // SWARM AT Commands
 uint8_t				rt_solicited 			= 0 ;
@@ -375,7 +377,6 @@ void HAL_UARTEx_RxEventCallback ( UART_HandleTypeDef *huart , uint16_t Size )
     		// Jeśli RT dostałem i nie była zamawiana, to wyłącz RT
     		if ( strncmp ( (char*) rx_buff , rt_rssi_at_result , strlen ( rt_rssi_at_result ) ) == 0 && rt_solicited == 0 )
     		{
-    			char tx_buff[15] ;
     			uint8_t cs = nmea_checksum ( rt_10_at_comm , strlen ( rt_10_at_comm ) ) ;
     			sprintf ( (char *) tx_buff , "%s*%02x\n" , rt_10_at_comm , cs ) ;
     			uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) tx_buff ,  strlen ( (char*) tx_buff ) , UART_TX_TIMEOUT ) ;

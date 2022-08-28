@@ -21,29 +21,29 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
   8 .data         00000090  20000000  08005070  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          000003e0  20000090  08005100  00020090  2**2
+  9 .bss          000003f8  20000090  08005100  00020090  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  20000470  08005100  00020470  2**0
+ 10 ._user_heap_stack 00000600  20000488  08005100  00020488  2**0
                   ALLOC
  11 .ARM.attributes 00000028  00000000  00000000  00020090  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000df49  00000000  00000000  000200b8  2**0
+ 12 .debug_info   0000df4b  00000000  00000000  000200b8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 0000220b  00000000  00000000  0002e001  2**0
+ 13 .debug_abbrev 0000220b  00000000  00000000  0002e003  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  14 .debug_aranges 00000a78  00000000  00000000  00030210  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  15 .debug_ranges 000009a0  00000000  00000000  00030c88  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  00018bc3  00000000  00000000  00031628  2**0
+ 16 .debug_macro  00018bc9  00000000  00000000  00031628  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0000d7d0  00000000  00000000  0004a1eb  2**0
+ 17 .debug_line   0000d7d0  00000000  00000000  0004a1f1  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0009ca7a  00000000  00000000  000579bb  2**0
+ 18 .debug_str    0009ca92  00000000  00000000  000579c1  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000f4435  2**0
+ 19 .comment      00000050  00000000  00000000  000f4453  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00002810  00000000  00000000  000f4488  2**2
+ 20 .debug_frame  00002810  00000000  00000000  000f44a4  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1445,7 +1445,7 @@ static void MX_GPIO_Init(void)
 void HAL_UARTEx_RxEventCallback ( UART_HandleTypeDef *huart , uint16_t Size )
 {
  80009f8:	b5b0      	push	{r4, r5, r7, lr}
- 80009fa:	b086      	sub	sp, #24
+ 80009fa:	b084      	sub	sp, #16
  80009fc:	af00      	add	r7, sp, #0
  80009fe:	6078      	str	r0, [r7, #4]
  8000a00:	000a      	movs	r2, r1
@@ -1454,35 +1454,34 @@ void HAL_UARTEx_RxEventCallback ( UART_HandleTypeDef *huart , uint16_t Size )
     if ( huart->Instance == USART1 )
  8000a06:	687b      	ldr	r3, [r7, #4]
  8000a08:	681b      	ldr	r3, [r3, #0]
- 8000a0a:	4a3b      	ldr	r2, [pc, #236]	; (8000af8 <HAL_UARTEx_RxEventCallback+0x100>)
+ 8000a0a:	4a3a      	ldr	r2, [pc, #232]	; (8000af4 <HAL_UARTEx_RxEventCallback+0xfc>)
  8000a0c:	4293      	cmp	r3, r2
- 8000a0e:	d167      	bne.n	8000ae0 <HAL_UARTEx_RxEventCallback+0xe8>
+ 8000a0e:	d166      	bne.n	8000ade <HAL_UARTEx_RxEventCallback+0xe6>
     {
     	if ( rx_buff[0] != 0 )
- 8000a10:	4b3a      	ldr	r3, [pc, #232]	; (8000afc <HAL_UARTEx_RxEventCallback+0x104>)
+ 8000a10:	4b39      	ldr	r3, [pc, #228]	; (8000af8 <HAL_UARTEx_RxEventCallback+0x100>)
  8000a12:	781b      	ldrb	r3, [r3, #0]
  8000a14:	2b00      	cmp	r3, #0
- 8000a16:	d063      	beq.n	8000ae0 <HAL_UARTEx_RxEventCallback+0xe8>
+ 8000a16:	d062      	beq.n	8000ade <HAL_UARTEx_RxEventCallback+0xe6>
     	{
     		// Jeśli RT dostałem i nie była zamawiana, to wyłącz RT
     		if ( strncmp ( (char*) rx_buff , rt_rssi_at_result , strlen ( rt_rssi_at_result ) ) == 0 && rt_solicited == 0 )
- 8000a18:	4939      	ldr	r1, [pc, #228]	; (8000b00 <HAL_UARTEx_RxEventCallback+0x108>)
- 8000a1a:	4b38      	ldr	r3, [pc, #224]	; (8000afc <HAL_UARTEx_RxEventCallback+0x104>)
+ 8000a18:	4938      	ldr	r1, [pc, #224]	; (8000afc <HAL_UARTEx_RxEventCallback+0x104>)
+ 8000a1a:	4b37      	ldr	r3, [pc, #220]	; (8000af8 <HAL_UARTEx_RxEventCallback+0x100>)
  8000a1c:	2209      	movs	r2, #9
  8000a1e:	0018      	movs	r0, r3
  8000a20:	f003 fe3c 	bl	800469c <strncmp>
  8000a24:	1e03      	subs	r3, r0, #0
- 8000a26:	d126      	bne.n	8000a76 <HAL_UARTEx_RxEventCallback+0x7e>
- 8000a28:	4b36      	ldr	r3, [pc, #216]	; (8000b04 <HAL_UARTEx_RxEventCallback+0x10c>)
+ 8000a26:	d125      	bne.n	8000a74 <HAL_UARTEx_RxEventCallback+0x7c>
+ 8000a28:	4b35      	ldr	r3, [pc, #212]	; (8000b00 <HAL_UARTEx_RxEventCallback+0x108>)
  8000a2a:	781b      	ldrb	r3, [r3, #0]
  8000a2c:	2b00      	cmp	r3, #0
- 8000a2e:	d122      	bne.n	8000a76 <HAL_UARTEx_RxEventCallback+0x7e>
+ 8000a2e:	d121      	bne.n	8000a74 <HAL_UARTEx_RxEventCallback+0x7c>
     		{
-    			char tx_buff[15] ;
     			uint8_t cs = nmea_checksum ( rt_10_at_comm , strlen ( rt_10_at_comm ) ) ;
- 8000a30:	2517      	movs	r5, #23
+ 8000a30:	250f      	movs	r5, #15
  8000a32:	197c      	adds	r4, r7, r5
- 8000a34:	4b34      	ldr	r3, [pc, #208]	; (8000b08 <HAL_UARTEx_RxEventCallback+0x110>)
+ 8000a34:	4b33      	ldr	r3, [pc, #204]	; (8000b04 <HAL_UARTEx_RxEventCallback+0x10c>)
  8000a36:	2106      	movs	r1, #6
  8000a38:	0018      	movs	r0, r3
  8000a3a:	f000 f877 	bl	8000b2c <nmea_checksum>
@@ -1491,120 +1490,119 @@ void HAL_UARTEx_RxEventCallback ( UART_HandleTypeDef *huart , uint16_t Size )
     			sprintf ( (char *) tx_buff , "%s*%02x\n" , rt_10_at_comm , cs ) ;
  8000a42:	197b      	adds	r3, r7, r5
  8000a44:	781b      	ldrb	r3, [r3, #0]
- 8000a46:	4a30      	ldr	r2, [pc, #192]	; (8000b08 <HAL_UARTEx_RxEventCallback+0x110>)
- 8000a48:	4930      	ldr	r1, [pc, #192]	; (8000b0c <HAL_UARTEx_RxEventCallback+0x114>)
- 8000a4a:	2408      	movs	r4, #8
- 8000a4c:	1938      	adds	r0, r7, r4
- 8000a4e:	f003 fe05 	bl	800465c <siprintf>
+ 8000a46:	4a2f      	ldr	r2, [pc, #188]	; (8000b04 <HAL_UARTEx_RxEventCallback+0x10c>)
+ 8000a48:	492f      	ldr	r1, [pc, #188]	; (8000b08 <HAL_UARTEx_RxEventCallback+0x110>)
+ 8000a4a:	4830      	ldr	r0, [pc, #192]	; (8000b0c <HAL_UARTEx_RxEventCallback+0x114>)
+ 8000a4c:	f003 fe06 	bl	800465c <siprintf>
     			uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) tx_buff ,  strlen ( (char*) tx_buff ) , UART_TX_TIMEOUT ) ;
- 8000a52:	193b      	adds	r3, r7, r4
- 8000a54:	0018      	movs	r0, r3
- 8000a56:	f7ff fb55 	bl	8000104 <strlen>
- 8000a5a:	0003      	movs	r3, r0
- 8000a5c:	b29a      	uxth	r2, r3
- 8000a5e:	1939      	adds	r1, r7, r4
- 8000a60:	482b      	ldr	r0, [pc, #172]	; (8000b10 <HAL_UARTEx_RxEventCallback+0x118>)
- 8000a62:	2364      	movs	r3, #100	; 0x64
- 8000a64:	f002 f938 	bl	8002cd8 <HAL_UART_Transmit>
- 8000a68:	0003      	movs	r3, r0
- 8000a6a:	001a      	movs	r2, r3
- 8000a6c:	4b29      	ldr	r3, [pc, #164]	; (8000b14 <HAL_UARTEx_RxEventCallback+0x11c>)
- 8000a6e:	701a      	strb	r2, [r3, #0]
+ 8000a50:	4b2e      	ldr	r3, [pc, #184]	; (8000b0c <HAL_UARTEx_RxEventCallback+0x114>)
+ 8000a52:	0018      	movs	r0, r3
+ 8000a54:	f7ff fb56 	bl	8000104 <strlen>
+ 8000a58:	0003      	movs	r3, r0
+ 8000a5a:	b29a      	uxth	r2, r3
+ 8000a5c:	492b      	ldr	r1, [pc, #172]	; (8000b0c <HAL_UARTEx_RxEventCallback+0x114>)
+ 8000a5e:	482c      	ldr	r0, [pc, #176]	; (8000b10 <HAL_UARTEx_RxEventCallback+0x118>)
+ 8000a60:	2364      	movs	r3, #100	; 0x64
+ 8000a62:	f002 f939 	bl	8002cd8 <HAL_UART_Transmit>
+ 8000a66:	0003      	movs	r3, r0
+ 8000a68:	001a      	movs	r2, r3
+ 8000a6a:	4b2a      	ldr	r3, [pc, #168]	; (8000b14 <HAL_UARTEx_RxEventCallback+0x11c>)
+ 8000a6c:	701a      	strb	r2, [r3, #0]
     			fv_done = 1 ;
- 8000a70:	4b29      	ldr	r3, [pc, #164]	; (8000b18 <HAL_UARTEx_RxEventCallback+0x120>)
- 8000a72:	2201      	movs	r2, #1
- 8000a74:	701a      	strb	r2, [r3, #0]
+ 8000a6e:	4b2a      	ldr	r3, [pc, #168]	; (8000b18 <HAL_UARTEx_RxEventCallback+0x120>)
+ 8000a70:	2201      	movs	r2, #1
+ 8000a72:	701a      	strb	r2, [r3, #0]
     		}
     		if ( strncmp ( (char*) rx_buff , rt_rssi_at_result , strlen ( rt_rssi_at_result ) ) == 0 && fv_done == 0 )
- 8000a76:	4922      	ldr	r1, [pc, #136]	; (8000b00 <HAL_UARTEx_RxEventCallback+0x108>)
- 8000a78:	4b20      	ldr	r3, [pc, #128]	; (8000afc <HAL_UARTEx_RxEventCallback+0x104>)
- 8000a7a:	2209      	movs	r2, #9
- 8000a7c:	0018      	movs	r0, r3
- 8000a7e:	f003 fe0d 	bl	800469c <strncmp>
- 8000a82:	1e03      	subs	r3, r0, #0
- 8000a84:	d110      	bne.n	8000aa8 <HAL_UARTEx_RxEventCallback+0xb0>
- 8000a86:	4b24      	ldr	r3, [pc, #144]	; (8000b18 <HAL_UARTEx_RxEventCallback+0x120>)
- 8000a88:	781b      	ldrb	r3, [r3, #0]
- 8000a8a:	2b00      	cmp	r3, #0
- 8000a8c:	d10c      	bne.n	8000aa8 <HAL_UARTEx_RxEventCallback+0xb0>
+ 8000a74:	4921      	ldr	r1, [pc, #132]	; (8000afc <HAL_UARTEx_RxEventCallback+0x104>)
+ 8000a76:	4b20      	ldr	r3, [pc, #128]	; (8000af8 <HAL_UARTEx_RxEventCallback+0x100>)
+ 8000a78:	2209      	movs	r2, #9
+ 8000a7a:	0018      	movs	r0, r3
+ 8000a7c:	f003 fe0e 	bl	800469c <strncmp>
+ 8000a80:	1e03      	subs	r3, r0, #0
+ 8000a82:	d110      	bne.n	8000aa6 <HAL_UARTEx_RxEventCallback+0xae>
+ 8000a84:	4b24      	ldr	r3, [pc, #144]	; (8000b18 <HAL_UARTEx_RxEventCallback+0x120>)
+ 8000a86:	781b      	ldrb	r3, [r3, #0]
+ 8000a88:	2b00      	cmp	r3, #0
+ 8000a8a:	d10c      	bne.n	8000aa6 <HAL_UARTEx_RxEventCallback+0xae>
     		{
     			uart_status = HAL_UART_Transmit ( &huart1 , fv_at_comm ,  strlen ( (char*) fv_at_comm ) , UART_TX_TIMEOUT ) ;
- 8000a8e:	4923      	ldr	r1, [pc, #140]	; (8000b1c <HAL_UARTEx_RxEventCallback+0x124>)
- 8000a90:	481f      	ldr	r0, [pc, #124]	; (8000b10 <HAL_UARTEx_RxEventCallback+0x118>)
- 8000a92:	2364      	movs	r3, #100	; 0x64
- 8000a94:	2207      	movs	r2, #7
- 8000a96:	f002 f91f 	bl	8002cd8 <HAL_UART_Transmit>
- 8000a9a:	0003      	movs	r3, r0
- 8000a9c:	001a      	movs	r2, r3
- 8000a9e:	4b1d      	ldr	r3, [pc, #116]	; (8000b14 <HAL_UARTEx_RxEventCallback+0x11c>)
- 8000aa0:	701a      	strb	r2, [r3, #0]
+ 8000a8c:	4923      	ldr	r1, [pc, #140]	; (8000b1c <HAL_UARTEx_RxEventCallback+0x124>)
+ 8000a8e:	4820      	ldr	r0, [pc, #128]	; (8000b10 <HAL_UARTEx_RxEventCallback+0x118>)
+ 8000a90:	2364      	movs	r3, #100	; 0x64
+ 8000a92:	2207      	movs	r2, #7
+ 8000a94:	f002 f920 	bl	8002cd8 <HAL_UART_Transmit>
+ 8000a98:	0003      	movs	r3, r0
+ 8000a9a:	001a      	movs	r2, r3
+ 8000a9c:	4b1d      	ldr	r3, [pc, #116]	; (8000b14 <HAL_UARTEx_RxEventCallback+0x11c>)
+ 8000a9e:	701a      	strb	r2, [r3, #0]
     			fv_done = 1 ;
- 8000aa2:	4b1d      	ldr	r3, [pc, #116]	; (8000b18 <HAL_UARTEx_RxEventCallback+0x120>)
- 8000aa4:	2201      	movs	r2, #1
- 8000aa6:	701a      	strb	r2, [r3, #0]
+ 8000aa0:	4b1d      	ldr	r3, [pc, #116]	; (8000b18 <HAL_UARTEx_RxEventCallback+0x120>)
+ 8000aa2:	2201      	movs	r2, #1
+ 8000aa4:	701a      	strb	r2, [r3, #0]
     		}
     		if ( strncmp ( (char*) rx_buff , fv_at_result , strlen ( fv_at_result ) ) == 0 && pw_done == 0 )
- 8000aa8:	491d      	ldr	r1, [pc, #116]	; (8000b20 <HAL_UARTEx_RxEventCallback+0x128>)
- 8000aaa:	4b14      	ldr	r3, [pc, #80]	; (8000afc <HAL_UARTEx_RxEventCallback+0x104>)
- 8000aac:	2203      	movs	r2, #3
- 8000aae:	0018      	movs	r0, r3
- 8000ab0:	f003 fdf4 	bl	800469c <strncmp>
- 8000ab4:	1e03      	subs	r3, r0, #0
- 8000ab6:	d110      	bne.n	8000ada <HAL_UARTEx_RxEventCallback+0xe2>
- 8000ab8:	4b1a      	ldr	r3, [pc, #104]	; (8000b24 <HAL_UARTEx_RxEventCallback+0x12c>)
- 8000aba:	781b      	ldrb	r3, [r3, #0]
- 8000abc:	2b00      	cmp	r3, #0
- 8000abe:	d10c      	bne.n	8000ada <HAL_UARTEx_RxEventCallback+0xe2>
+ 8000aa6:	491e      	ldr	r1, [pc, #120]	; (8000b20 <HAL_UARTEx_RxEventCallback+0x128>)
+ 8000aa8:	4b13      	ldr	r3, [pc, #76]	; (8000af8 <HAL_UARTEx_RxEventCallback+0x100>)
+ 8000aaa:	2203      	movs	r2, #3
+ 8000aac:	0018      	movs	r0, r3
+ 8000aae:	f003 fdf5 	bl	800469c <strncmp>
+ 8000ab2:	1e03      	subs	r3, r0, #0
+ 8000ab4:	d110      	bne.n	8000ad8 <HAL_UARTEx_RxEventCallback+0xe0>
+ 8000ab6:	4b1b      	ldr	r3, [pc, #108]	; (8000b24 <HAL_UARTEx_RxEventCallback+0x12c>)
+ 8000ab8:	781b      	ldrb	r3, [r3, #0]
+ 8000aba:	2b00      	cmp	r3, #0
+ 8000abc:	d10c      	bne.n	8000ad8 <HAL_UARTEx_RxEventCallback+0xe0>
     		{
     			uart_status = HAL_UART_Transmit ( &huart1 , pw_at_comm ,  strlen ( (char*) pw_at_comm ) , UART_TX_TIMEOUT ) ;
- 8000ac0:	4919      	ldr	r1, [pc, #100]	; (8000b28 <HAL_UARTEx_RxEventCallback+0x130>)
- 8000ac2:	4813      	ldr	r0, [pc, #76]	; (8000b10 <HAL_UARTEx_RxEventCallback+0x118>)
- 8000ac4:	2364      	movs	r3, #100	; 0x64
- 8000ac6:	2209      	movs	r2, #9
- 8000ac8:	f002 f906 	bl	8002cd8 <HAL_UART_Transmit>
- 8000acc:	0003      	movs	r3, r0
- 8000ace:	001a      	movs	r2, r3
- 8000ad0:	4b10      	ldr	r3, [pc, #64]	; (8000b14 <HAL_UARTEx_RxEventCallback+0x11c>)
- 8000ad2:	701a      	strb	r2, [r3, #0]
+ 8000abe:	491a      	ldr	r1, [pc, #104]	; (8000b28 <HAL_UARTEx_RxEventCallback+0x130>)
+ 8000ac0:	4813      	ldr	r0, [pc, #76]	; (8000b10 <HAL_UARTEx_RxEventCallback+0x118>)
+ 8000ac2:	2364      	movs	r3, #100	; 0x64
+ 8000ac4:	2209      	movs	r2, #9
+ 8000ac6:	f002 f907 	bl	8002cd8 <HAL_UART_Transmit>
+ 8000aca:	0003      	movs	r3, r0
+ 8000acc:	001a      	movs	r2, r3
+ 8000ace:	4b11      	ldr	r3, [pc, #68]	; (8000b14 <HAL_UARTEx_RxEventCallback+0x11c>)
+ 8000ad0:	701a      	strb	r2, [r3, #0]
     		    pw_done = 1 ;
- 8000ad4:	4b13      	ldr	r3, [pc, #76]	; (8000b24 <HAL_UARTEx_RxEventCallback+0x12c>)
- 8000ad6:	2201      	movs	r2, #1
- 8000ad8:	701a      	strb	r2, [r3, #0]
+ 8000ad2:	4b14      	ldr	r3, [pc, #80]	; (8000b24 <HAL_UARTEx_RxEventCallback+0x12c>)
+ 8000ad4:	2201      	movs	r2, #1
+ 8000ad6:	701a      	strb	r2, [r3, #0]
     		}
     		//uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) rx_buff ,  strlen ( (char*) rx_buff ) , UART_TX_TIMEOUT ) ;
     		//uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) rx_buff ,  Size , UART_TX_TIMEOUT ) ;
     		rx_buff[0] = 0 ;
- 8000ada:	4b08      	ldr	r3, [pc, #32]	; (8000afc <HAL_UARTEx_RxEventCallback+0x104>)
- 8000adc:	2200      	movs	r2, #0
- 8000ade:	701a      	strb	r2, [r3, #0]
+ 8000ad8:	4b07      	ldr	r3, [pc, #28]	; (8000af8 <HAL_UARTEx_RxEventCallback+0x100>)
+ 8000ada:	2200      	movs	r2, #0
+ 8000adc:	701a      	strb	r2, [r3, #0]
     		//HAL_GPIO_TogglePin ( GREEN_GPIO_Port , GREEN_Pin ) ;
     	}
     }
     HAL_UARTEx_ReceiveToIdle_DMA ( &huart1 , rx_buff , sizeof ( rx_buff ) ) ;
- 8000ae0:	23fa      	movs	r3, #250	; 0xfa
- 8000ae2:	005a      	lsls	r2, r3, #1
- 8000ae4:	4905      	ldr	r1, [pc, #20]	; (8000afc <HAL_UARTEx_RxEventCallback+0x104>)
- 8000ae6:	4b0a      	ldr	r3, [pc, #40]	; (8000b10 <HAL_UARTEx_RxEventCallback+0x118>)
- 8000ae8:	0018      	movs	r0, r3
- 8000aea:	f003 fcbf 	bl	800446c <HAL_UARTEx_ReceiveToIdle_DMA>
+ 8000ade:	23fa      	movs	r3, #250	; 0xfa
+ 8000ae0:	005a      	lsls	r2, r3, #1
+ 8000ae2:	4905      	ldr	r1, [pc, #20]	; (8000af8 <HAL_UARTEx_RxEventCallback+0x100>)
+ 8000ae4:	4b0a      	ldr	r3, [pc, #40]	; (8000b10 <HAL_UARTEx_RxEventCallback+0x118>)
+ 8000ae6:	0018      	movs	r0, r3
+ 8000ae8:	f003 fcc0 	bl	800446c <HAL_UARTEx_ReceiveToIdle_DMA>
 }
- 8000aee:	46c0      	nop			; (mov r8, r8)
- 8000af0:	46bd      	mov	sp, r7
- 8000af2:	b006      	add	sp, #24
- 8000af4:	bdb0      	pop	{r4, r5, r7, pc}
- 8000af6:	46c0      	nop			; (mov r8, r8)
- 8000af8:	40013800 	.word	0x40013800
- 8000afc:	20000260 	.word	0x20000260
- 8000b00:	08004f94 	.word	0x08004f94
- 8000b04:	20000454 	.word	0x20000454
- 8000b08:	08004f8c 	.word	0x08004f8c
- 8000b0c:	08004f6c 	.word	0x08004f6c
+ 8000aec:	46c0      	nop			; (mov r8, r8)
+ 8000aee:	46bd      	mov	sp, r7
+ 8000af0:	b004      	add	sp, #16
+ 8000af2:	bdb0      	pop	{r4, r5, r7, pc}
+ 8000af4:	40013800 	.word	0x40013800
+ 8000af8:	20000260 	.word	0x20000260
+ 8000afc:	08004f94 	.word	0x08004f94
+ 8000b00:	2000046d 	.word	0x2000046d
+ 8000b04:	08004f8c 	.word	0x08004f8c
+ 8000b08:	08004f6c 	.word	0x08004f6c
+ 8000b0c:	20000454 	.word	0x20000454
  8000b10:	200000d8 	.word	0x200000d8
  8000b14:	2000025c 	.word	0x2000025c
- 8000b18:	20000455 	.word	0x20000455
+ 8000b18:	2000046e 	.word	0x2000046e
  8000b1c:	08004f78 	.word	0x08004f78
  8000b20:	08004fa0 	.word	0x08004fa0
- 8000b24:	20000456 	.word	0x20000456
+ 8000b24:	2000046f 	.word	0x2000046f
  8000b28:	08004f80 	.word	0x08004f80
 
 08000b2c <nmea_checksum>:
@@ -2370,8 +2368,8 @@ void *_sbrk(ptrdiff_t incr)
  8000eea:	bd80      	pop	{r7, pc}
  8000eec:	20009000 	.word	0x20009000
  8000ef0:	00000400 	.word	0x00000400
- 8000ef4:	20000458 	.word	0x20000458
- 8000ef8:	20000470 	.word	0x20000470
+ 8000ef4:	20000470 	.word	0x20000470
+ 8000ef8:	20000488 	.word	0x20000488
 
 08000efc <SystemInit>:
   * @brief  Setup the microcontroller system.
@@ -2488,7 +2486,7 @@ LoopForever:
   ldr r2, =_sbss
  8000f50:	20000090 	.word	0x20000090
   ldr r4, =_ebss
- 8000f54:	20000470 	.word	0x20000470
+ 8000f54:	20000488 	.word	0x20000488
 
 08000f58 <ADC1_COMP_IRQHandler>:
  * @retval None
@@ -2691,7 +2689,7 @@ __weak void HAL_IncTick(void)
  8001048:	bd80      	pop	{r7, pc}
  800104a:	46c0      	nop			; (mov r8, r8)
  800104c:	20000028 	.word	0x20000028
- 8001050:	2000045c 	.word	0x2000045c
+ 8001050:	20000474 	.word	0x20000474
 
 08001054 <HAL_GetTick>:
   * @note This function is declared as __weak to be overwritten in case of other
@@ -2710,7 +2708,7 @@ __weak uint32_t HAL_GetTick(void)
  800105e:	46bd      	mov	sp, r7
  8001060:	bd80      	pop	{r7, pc}
  8001062:	46c0      	nop			; (mov r8, r8)
- 8001064:	2000045c 	.word	0x2000045c
+ 8001064:	20000474 	.word	0x20000474
 
 08001068 <__NVIC_EnableIRQ>:
   \details Enables a device specific interrupt in the NVIC interrupt controller.
@@ -13632,7 +13630,7 @@ static void UARTEx_SetNbDataToProcess(UART_HandleTypeDef *huart)
  8004d62:	6054      	str	r4, [r2, #4]
  8004d64:	e7ca      	b.n	8004cfc <_free_r+0x24>
  8004d66:	46c0      	nop			; (mov r8, r8)
- 8004d68:	20000460 	.word	0x20000460
+ 8004d68:	20000478 	.word	0x20000478
 
 08004d6c <sbrk_aligned>:
  8004d6c:	b570      	push	{r4, r5, r6, lr}
@@ -13664,7 +13662,7 @@ static void UARTEx_SetNbDataToProcess(UART_HandleTypeDef *huart)
  8004da6:	0028      	movs	r0, r5
  8004da8:	bd70      	pop	{r4, r5, r6, pc}
  8004daa:	46c0      	nop			; (mov r8, r8)
- 8004dac:	20000464 	.word	0x20000464
+ 8004dac:	2000047c 	.word	0x2000047c
 
 08004db0 <_malloc_r>:
  8004db0:	b5f7      	push	{r0, r1, r2, r4, r5, r6, r7, lr}
@@ -13777,7 +13775,7 @@ static void UARTEx_SetNbDataToProcess(UART_HandleTypeDef *huart)
  8004e90:	f000 f84e 	bl	8004f30 <__malloc_unlock>
  8004e94:	e7cd      	b.n	8004e32 <_malloc_r+0x82>
  8004e96:	46c0      	nop			; (mov r8, r8)
- 8004e98:	20000460 	.word	0x20000460
+ 8004e98:	20000478 	.word	0x20000478
 
 08004e9c <_realloc_r>:
  8004e9c:	b5f7      	push	{r0, r1, r2, r4, r5, r6, r7, lr}
@@ -13839,7 +13837,7 @@ static void UARTEx_SetNbDataToProcess(UART_HandleTypeDef *huart)
  8004f16:	6023      	str	r3, [r4, #0]
  8004f18:	bd70      	pop	{r4, r5, r6, pc}
  8004f1a:	46c0      	nop			; (mov r8, r8)
- 8004f1c:	20000468 	.word	0x20000468
+ 8004f1c:	20000480 	.word	0x20000480
 
 08004f20 <__malloc_lock>:
  8004f20:	b510      	push	{r4, lr}
@@ -13847,7 +13845,7 @@ static void UARTEx_SetNbDataToProcess(UART_HandleTypeDef *huart)
  8004f24:	f000 f814 	bl	8004f50 <__retarget_lock_acquire_recursive>
  8004f28:	bd10      	pop	{r4, pc}
  8004f2a:	46c0      	nop			; (mov r8, r8)
- 8004f2c:	2000046c 	.word	0x2000046c
+ 8004f2c:	20000484 	.word	0x20000484
 
 08004f30 <__malloc_unlock>:
  8004f30:	b510      	push	{r4, lr}
@@ -13855,7 +13853,7 @@ static void UARTEx_SetNbDataToProcess(UART_HandleTypeDef *huart)
  8004f34:	f000 f80d 	bl	8004f52 <__retarget_lock_release_recursive>
  8004f38:	bd10      	pop	{r4, pc}
  8004f3a:	46c0      	nop			; (mov r8, r8)
- 8004f3c:	2000046c 	.word	0x2000046c
+ 8004f3c:	20000484 	.word	0x20000484
 
 08004f40 <_malloc_usable_size_r>:
  8004f40:	1f0b      	subs	r3, r1, #4
