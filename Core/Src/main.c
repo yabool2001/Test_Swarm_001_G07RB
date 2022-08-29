@@ -56,18 +56,12 @@ uint8_t             rx_buff[RX_BUFF_SIZE] ;
 char				tx_buff[AT_COMM_TX_BUFF_SIZE] ;
 
 // SWARM AT Commands
-uint8_t				rt_solicited 			= 0 ;
-const uint8_t       fv_at_comm[]       		= "$FV*10\n" ;
-uint8_t				fv_done					= 0 ;
-const uint8_t       pw_at_comm[]       		= "$PW @*67\n" ;
-uint8_t				pw_done					= 0 ;
-const char			rt_at_comm[]       		= "$RT OK" ;
-const char			rt_10_at_comm[]       	= "$RT 10" ;
+uint8_t				rt_unsolicited 			= 1 ;
 
 // SWARM AT Results
-const char          rt_rssi_at_result[]		= "$RT RSSI=" ;
-const char          fv_at_result[]     		= "$FV" ;
-const char          pw_at_result[]     		= "$FV" ;
+const char          rt_ok_at_result[]		= "$RT OK*22" ;
+const char          rt_0_at_result[]		= "$RT 0*16" ;
+
 
 /* USER CODE END PV */
 
@@ -79,6 +73,8 @@ static void MX_USART2_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
+void send2swarm_rt_0 () ;
+void send2swarm_rt_query_rate () ;
 uint8_t nmea_checksum ( const char *sz , size_t len ) ;
 /* USER CODE END PFP */
 
@@ -122,6 +118,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) hello , strlen ( hello ) , UART_TX_TIMEOUT ) ;
   HAL_UARTEx_ReceiveToIdle_DMA ( &huart1 , rx_buff , sizeof ( rx_buff ) ) ;
+  send2swarm_rt_0 () ; // RT unsolicitied off
+  send2swarm_rt_query_rate () ; // Query RT rate
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -374,24 +372,26 @@ void HAL_UARTEx_RxEventCallback ( UART_HandleTypeDef *huart , uint16_t Size )
     {
     	if ( rx_buff[0] != 0 )
     	{
-    		// Jeśli RT dostałem i nie była zamawiana, to wyłącz RT
-    		if ( strncmp ( (char*) rx_buff , rt_rssi_at_result , strlen ( rt_rssi_at_result ) ) == 0 && rt_solicited == 0 )
+    		// Jeśli dostałem potwierdzenie $RT = 0, to ustawiam odpowiednią zmienną
+    		if ( strncmp ( (char*) rx_buff , rt_0_at_result , strlen ( rt_0_at_result ) ) == 0 )
     		{
-    			uint8_t cs = nmea_checksum ( rt_10_at_comm , strlen ( rt_10_at_comm ) ) ;
-    			sprintf ( (char *) tx_buff , "%s*%02x\n" , rt_10_at_comm , cs ) ;
-    			uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) tx_buff ,  strlen ( (char*) tx_buff ) , UART_TX_TIMEOUT ) ;
-    			fv_done = 1 ;
+    			rt_unsolicited = 0 ;
     		}
-    		if ( strncmp ( (char*) rx_buff , rt_rssi_at_result , strlen ( rt_rssi_at_result ) ) == 0 && fv_done == 0 )
+    		if ( strncmp ( (char*) rx_buff , rt_ok_at_result , strlen ( rt_ok_at_result ) ) == 0 )
     		{
-    			uart_status = HAL_UART_Transmit ( &huart1 , fv_at_comm ,  strlen ( (char*) fv_at_comm ) , UART_TX_TIMEOUT ) ;
-    			fv_done = 1 ;
+    			__NOP () ;
     		}
-    		if ( strncmp ( (char*) rx_buff , fv_at_result , strlen ( fv_at_result ) ) == 0 && pw_done == 0 )
-    		{
-    			uart_status = HAL_UART_Transmit ( &huart1 , pw_at_comm ,  strlen ( (char*) pw_at_comm ) , UART_TX_TIMEOUT ) ;
-    		    pw_done = 1 ;
-    		}
+
+    		//if ( strncmp ( (char*) rx_buff , rt_rssi_at_result , strlen ( rt_rssi_at_result ) ) == 0 && fv_done == 0 )
+    		//{
+    		//	uart_status = HAL_UART_Transmit ( &huart1 , fv_at_comm ,  strlen ( (char*) fv_at_comm ) , UART_TX_TIMEOUT ) ;
+    		//	fv_done = 1 ;
+    		//}
+    		//if ( strncmp ( (char*) rx_buff , fv_at_result , strlen ( fv_at_result ) ) == 0 && pw_done == 0 )
+    		//{
+    		//	uart_status = HAL_UART_Transmit ( &huart1 , pw_at_comm ,  strlen ( (char*) pw_at_comm ) , UART_TX_TIMEOUT ) ;
+    		//   pw_done = 1 ;
+    		//}
     		//uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) rx_buff ,  strlen ( (char*) rx_buff ) , UART_TX_TIMEOUT ) ;
     		//uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) rx_buff ,  Size , UART_TX_TIMEOUT ) ;
     		rx_buff[0] = 0 ;
@@ -399,6 +399,25 @@ void HAL_UARTEx_RxEventCallback ( UART_HandleTypeDef *huart , uint16_t Size )
     	}
     }
     HAL_UARTEx_ReceiveToIdle_DMA ( &huart1 , rx_buff , sizeof ( rx_buff ) ) ;
+}
+void send2swarm_rt_query_rate ()
+{
+	const char rt_q_rate_at_comm[] = "$RT ?" ;
+	uint8_t cs = nmea_checksum ( rt_q_rate_at_comm , strlen ( rt_q_rate_at_comm ) ) ;
+	char uart_tx_buff[10] ;
+
+	sprintf ( (char*) uart_tx_buff , "%s*%02x\n" , rt_q_rate_at_comm , cs ) ;
+	uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) uart_tx_buff ,  strlen ( (char*) uart_tx_buff ) , UART_TX_TIMEOUT ) ;
+}
+void send2swarm_rt_0 ()
+{
+	const char rt_0_at_comm[] = "$RT 0" ;
+	uint8_t cs = nmea_checksum ( rt_0_at_comm , strlen ( rt_0_at_comm ) ) ;
+	char uart_tx_buff[10] ;
+
+	sprintf ( (char*) uart_tx_buff , "%s*%02x\n" , rt_0_at_comm , cs ) ;
+	uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) uart_tx_buff ,  strlen ( (char*) uart_tx_buff ) , UART_TX_TIMEOUT ) ;
+
 }
 uint8_t nmea_checksum ( const char *sz , size_t len )
 {
