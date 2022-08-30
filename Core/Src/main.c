@@ -45,22 +45,32 @@
 /* Private variables ---------------------------------------------------------*/
 RTC_HandleTypeDef hrtc;
 
+TIM_HandleTypeDef htim6;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
+uint16_t			checklist				= 0 ; //docelowo każdy bit będzie odpowiedzialny za kolejny krok aplikacji
+uint8_t				waiting_for_answer		= 0 ;
+
 char                hello[]         		= "Hello! Test_Swarm_001_G071RB\n" ;
+char                good[]         			= "So far, so good !\n" ;
 HAL_StatusTypeDef   uart_status ;
 uint8_t             rx_buff[RX_BUFF_SIZE] ;
 char				tx_buff[AT_COMM_TX_BUFF_SIZE] ;
 
 // SWARM AT Commands
+const char			rt_q_rate_at_comm[]		= "$RT ?" ;
+const char 			rt_0_at_comm[]			= "$RT 0" ;
+const char 			dt_mostrecent_at_comm[]	= "$DT @" ;
 uint8_t				rt_unsolicited 			= 1 ;
 
 // SWARM AT Results
-const char          rt_ok_at_result[]		= "$RT OK*22" ;
-const char          rt_0_at_result[]		= "$RT 0*16" ;
+const char          rt_ok_answer[]			= "$RT OK*22" ;
+const char          rt_0_answer[]			= "$RT 0*16" ;
+const char          dt_answer[]				= "$DT " ;
 
 
 /* USER CODE END PV */
@@ -72,9 +82,12 @@ static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
+void send2swarm_at_command ( const char* at_command , const char* answer , uint16_t step ) ;
 void send2swarm_rt_0 () ;
 void send2swarm_rt_query_rate () ;
+uint8_t check_answer ( const char* s ) ;
 uint8_t nmea_checksum ( const char *sz , size_t len ) ;
 /* USER CODE END PFP */
 
@@ -115,11 +128,19 @@ int main(void)
   MX_USART2_UART_Init();
   MX_RTC_Init();
   MX_USART1_UART_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) hello , strlen ( hello ) , UART_TX_TIMEOUT ) ;
   HAL_UARTEx_ReceiveToIdle_DMA ( &huart1 , rx_buff , sizeof ( rx_buff ) ) ;
-  send2swarm_rt_0 () ; // RT unsolicitied off
-  send2swarm_rt_query_rate () ; // Query RT rate
+  __HAL_TIM_CLEAR_IT ( &htim6 , TIM_IT_UPDATE ) ; // żeby nie generować przerwania TIM6 od razu: https://stackoverflow.com/questions/71099885/why-hal-tim-periodelapsedcallback-gets-called-immediately-after-hal-tim-base-sta
+  //send2swarm_rt_0 () ; // RT unsolicitied off
+  send2swarm_at_command ( rt_0_at_comm , rt_ok_answer , 1 ) ;
+  if ( checklist == 1 )
+	  send2swarm_at_command ( rt_q_rate_at_comm , rt_0_answer , 2 ) ; // Query RT rate
+  if ( checklist == 2 )
+	  send2swarm_at_command ( dt_mostrecent_at_comm , dt_answer , 3 ) ; // Query most accurate datetime
+  if ( checklist == 3 )
+	  uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) good , strlen ( good ) , UART_TX_TIMEOUT ) ;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -214,6 +235,44 @@ static void MX_RTC_Init(void)
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
+
+}
+
+/**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 16000-1;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 250-1;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
 
 }
 
@@ -373,29 +432,16 @@ void HAL_UARTEx_RxEventCallback ( UART_HandleTypeDef *huart , uint16_t Size )
     	if ( rx_buff[0] != 0 )
     	{
     		// Jeśli dostałem potwierdzenie $RT = 0, to ustawiam odpowiednią zmienną
-    		if ( strncmp ( (char*) rx_buff , rt_0_at_result , strlen ( rt_0_at_result ) ) == 0 )
+    		if ( strncmp ( (char*) rx_buff , rt_0_answer , strlen ( rt_0_answer ) ) == 0 )
     		{
     			rt_unsolicited = 0 ;
+    			__NOP () ;
     		}
-    		if ( strncmp ( (char*) rx_buff , rt_ok_at_result , strlen ( rt_ok_at_result ) ) == 0 )
+    		if ( strncmp ( (char*) rx_buff , rt_ok_answer , strlen ( rt_ok_answer ) ) == 0 )
     		{
     			__NOP () ;
     		}
-
-    		//if ( strncmp ( (char*) rx_buff , rt_rssi_at_result , strlen ( rt_rssi_at_result ) ) == 0 && fv_done == 0 )
-    		//{
-    		//	uart_status = HAL_UART_Transmit ( &huart1 , fv_at_comm ,  strlen ( (char*) fv_at_comm ) , UART_TX_TIMEOUT ) ;
-    		//	fv_done = 1 ;
-    		//}
-    		//if ( strncmp ( (char*) rx_buff , fv_at_result , strlen ( fv_at_result ) ) == 0 && pw_done == 0 )
-    		//{
-    		//	uart_status = HAL_UART_Transmit ( &huart1 , pw_at_comm ,  strlen ( (char*) pw_at_comm ) , UART_TX_TIMEOUT ) ;
-    		//   pw_done = 1 ;
-    		//}
-    		//uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) rx_buff ,  strlen ( (char*) rx_buff ) , UART_TX_TIMEOUT ) ;
-    		//uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) rx_buff ,  Size , UART_TX_TIMEOUT ) ;
-    		rx_buff[0] = 0 ;
-    		//HAL_GPIO_TogglePin ( GREEN_GPIO_Port , GREEN_Pin ) ;
+    		//rx_buff[0] = 0 ;
     	}
     }
     HAL_UARTEx_ReceiveToIdle_DMA ( &huart1 , rx_buff , sizeof ( rx_buff ) ) ;
@@ -408,6 +454,16 @@ void send2swarm_rt_query_rate ()
 
 	sprintf ( (char*) uart_tx_buff , "%s*%02x\n" , rt_q_rate_at_comm , cs ) ;
 	uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) uart_tx_buff ,  strlen ( (char*) uart_tx_buff ) , UART_TX_TIMEOUT ) ;
+	waiting_for_answer = 1 ;
+	HAL_TIM_Base_Start_IT ( &htim6 ) ;
+		while ( waiting_for_answer )
+		{
+			if ( check_answer ( rt_0_answer ) )
+			{
+				checklist = 2 ;
+				break ;
+			}
+		}
 }
 void send2swarm_rt_0 ()
 {
@@ -417,7 +473,49 @@ void send2swarm_rt_0 ()
 
 	sprintf ( (char*) uart_tx_buff , "%s*%02x\n" , rt_0_at_comm , cs ) ;
 	uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) uart_tx_buff ,  strlen ( (char*) uart_tx_buff ) , UART_TX_TIMEOUT ) ;
+	waiting_for_answer = 1 ;
+	//__HAL_TIM_CLEAR_IT ( &htim6 , TIM_IT_UPDATE ) ; //https://stackoverflow.com/questions/71099885/why-hal-tim-periodelapsedcallback-gets-called-immediately-after-hal-tim-base-sta
+	HAL_TIM_Base_Start_IT ( &htim6 ) ;
+	while ( waiting_for_answer )
+	{
+		/*
+		 * Sprawdzić uważnie, bo przy "rt_ok_answer" poniższa funkcja wszystko puszczała
+		 */
+		if ( check_answer ( rt_ok_answer ) )
+		{
+			checklist = 1 ;
+			break ;
+		}
+	}
+}
+void send2swarm_at_command ( const char* at_command , const char* answer , uint16_t step )
+{
+	uint8_t cs = nmea_checksum ( at_command , strlen ( at_command ) ) ;
+	char uart_tx_buff[10] ;
 
+	sprintf ( (char*) uart_tx_buff , "%s*%02x\n" , at_command , cs ) ;
+	uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) uart_tx_buff ,  strlen ( (char*) uart_tx_buff ) , UART_TX_TIMEOUT ) ;
+	waiting_for_answer = 1 ;
+	//__HAL_TIM_CLEAR_IT ( &htim6 , TIM_IT_UPDATE ) ; //https://stackoverflow.com/questions/71099885/why-hal-tim-periodelapsedcallback-gets-called-immediately-after-hal-tim-base-sta
+	HAL_TIM_Base_Start_IT ( &htim6 ) ;
+	while ( waiting_for_answer )
+	{
+		if ( check_answer ( answer ) )
+		{
+			checklist = step ;
+			break ;
+		}
+	}
+}
+uint8_t check_answer ( const char* answer )
+{
+	if ( strncmp ( (char*) rx_buff , answer , strlen ( answer ) ) == 0 )
+	{
+		rx_buff[0] = 0 ;
+		return 1 ;
+	}
+	else
+		return 0 ;
 }
 uint8_t nmea_checksum ( const char *sz , size_t len )
 {
@@ -429,6 +527,17 @@ uint8_t nmea_checksum ( const char *sz , size_t len )
 		cs ^= ( (uint8_t) sz [i] ) ;
 	return cs;
 }
+void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef *htim )
+{
+	if ( htim->Instance == TIM6 )
+	{
+		waiting_for_answer = 0 ;
+		HAL_TIM_Base_Stop_IT ( &htim6 ) ;
+		//NVIC_SystemReset () ;
+		__NOP () ;
+	}
+}
+
 /* USER CODE END 4 */
 
 /**
