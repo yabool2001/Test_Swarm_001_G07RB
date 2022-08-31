@@ -130,10 +130,11 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
+  //HAL_RTCEx_DeactivateWakeUpTimer ( &hrtc ) ;
+  __HAL_TIM_CLEAR_IT ( &htim6 , TIM_IT_UPDATE ) ; // żeby nie generować przerwania TIM6 od razu: https://stackoverflow.com/questions/71099885/why-hal-tim-periodelapsedcallback-gets-called-immediately-after-hal-tim-base-sta
+
   uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) hello , strlen ( hello ) , UART_TX_TIMEOUT ) ;
   HAL_UARTEx_ReceiveToIdle_DMA ( &huart1 , rx_buff , sizeof ( rx_buff ) ) ;
-  __HAL_TIM_CLEAR_IT ( &htim6 , TIM_IT_UPDATE ) ; // żeby nie generować przerwania TIM6 od razu: https://stackoverflow.com/questions/71099885/why-hal-tim-periodelapsedcallback-gets-called-immediately-after-hal-tim-base-sta
-  //send2swarm_rt_0 () ; // RT unsolicitied off
   send2swarm_at_command ( rt_0_at_comm , rt_ok_answer , 1 ) ;
   if ( checklist == 1 )
 	  send2swarm_at_command ( rt_q_rate_at_comm , rt_0_answer , 2 ) ; // Query RT rate
@@ -145,6 +146,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_PWREx_EnterSHUTDOWNMode () ; // Enter the SHUTDOWN mode
   while ( 1 )
   {
 	  __NOP () ;
@@ -213,6 +215,9 @@ static void MX_RTC_Init(void)
 
   /* USER CODE END RTC_Init 0 */
 
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
+
   /* USER CODE BEGIN RTC_Init 1 */
 
   /* USER CODE END RTC_Init 1 */
@@ -229,6 +234,39 @@ static void MX_RTC_Init(void)
   hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
   hrtc.Init.OutPutPullUp = RTC_OUTPUT_PULLUP_NONE;
   if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN Check_RTC_BKUP */
+
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date
+  */
+  sTime.Hours = 0;
+  sTime.Minutes = 0;
+  sTime.Seconds = 0;
+  sTime.SubSeconds = 0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 1;
+  sDate.Year = 0;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Enable the WakeUp
+  */
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x500B, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
   {
     Error_Handler();
   }
@@ -474,7 +512,6 @@ void send2swarm_rt_0 ()
 	sprintf ( (char*) uart_tx_buff , "%s*%02x\n" , rt_0_at_comm , cs ) ;
 	uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) uart_tx_buff ,  strlen ( (char*) uart_tx_buff ) , UART_TX_TIMEOUT ) ;
 	waiting_for_answer = 1 ;
-	//__HAL_TIM_CLEAR_IT ( &htim6 , TIM_IT_UPDATE ) ; //https://stackoverflow.com/questions/71099885/why-hal-tim-periodelapsedcallback-gets-called-immediately-after-hal-tim-base-sta
 	HAL_TIM_Base_Start_IT ( &htim6 ) ;
 	while ( waiting_for_answer )
 	{
@@ -496,7 +533,6 @@ void send2swarm_at_command ( const char* at_command , const char* answer , uint1
 	sprintf ( (char*) uart_tx_buff , "%s*%02x\n" , at_command , cs ) ;
 	uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) uart_tx_buff ,  strlen ( (char*) uart_tx_buff ) , UART_TX_TIMEOUT ) ;
 	waiting_for_answer = 1 ;
-	//__HAL_TIM_CLEAR_IT ( &htim6 , TIM_IT_UPDATE ) ; //https://stackoverflow.com/questions/71099885/why-hal-tim-periodelapsedcallback-gets-called-immediately-after-hal-tim-base-sta
 	HAL_TIM_Base_Start_IT ( &htim6 ) ;
 	while ( waiting_for_answer )
 	{
@@ -533,7 +569,7 @@ void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef *htim )
 	{
 		waiting_for_answer = 0 ;
 		HAL_TIM_Base_Stop_IT ( &htim6 ) ;
-		//NVIC_SystemReset () ;
+		//NVIC_SystemReset () ; // Może kiedyś przyda się restartowanie aplikacji przy problemach z hardware
 		__NOP () ;
 	}
 }
