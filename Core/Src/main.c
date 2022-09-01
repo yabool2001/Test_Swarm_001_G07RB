@@ -62,16 +62,31 @@ uint8_t             rx_buff[RX_BUFF_SIZE] ;
 char				tx_buff[AT_COMM_TX_BUFF_SIZE] ;
 
 // SWARM AT Commands
-const char			rt_q_rate_at_comm[]		= "$RT ?" ;
 const char 			rt_0_at_comm[]			= "$RT 0" ;
+const char			rt_q_rate_at_comm[]		= "$RT ?" ;
+const char 			pw_0_at_comm[]			= "$PW 0" ;
+const char			pw_q_rate_at_comm[]		= "$PW ?" ;
+const char 			pw_mostrecent_at_comm[]	= "$PW @" ;
+const char 			gn_0_at_comm[]			= "$GN 0" ;
+const char			gn_q_rate_at_comm[]		= "$GN ?" ;
+const char 			gn_mostrecent_at_comm[]	= "$GN @" ;
 const char 			dt_mostrecent_at_comm[]	= "$DT @" ;
+const char 			sl_30s_at_comm[]		= "$SL S=30" ;
+const char 			mt_del_all_at_comm[]	= "$MT D=U" ;
 uint8_t				rt_unsolicited 			= 1 ;
 
-// SWARM AT Results
+// SWARM AT Answers
 const char          rt_ok_answer[]			= "$RT OK*22" ;
 const char          rt_0_answer[]			= "$RT 0*16" ;
+const char          pw_ok_answer[]			= "$PW OK*23" ;
+const char          pw_0_answer[]			= "$PW 0*17" ;
+const char          pw_mostrecent_answer[]	= "$PW " ;
+const char          gn_ok_answer[]			= "$GN OK*2d" ;
+const char          gn_0_answer[]			= "$GN 0*19" ;
+const char          gn_mostrecent_answer[]	= "$GN " ;
 const char          dt_answer[]				= "$DT " ;
-
+const char          sl_ok_answer[]			= "$SL OK*3b" ;
+const char 			mt_del_all_answer[]		= "$MT " ;
 
 /* USER CODE END PV */
 
@@ -139,14 +154,29 @@ int main(void)
   if ( checklist == 1 )
 	  send2swarm_at_command ( rt_q_rate_at_comm , rt_0_answer , 2 ) ; // Query RT rate
   if ( checklist == 2 )
-	  send2swarm_at_command ( dt_mostrecent_at_comm , dt_answer , 3 ) ; // Query most accurate datetime
+  	  send2swarm_at_command ( pw_0_at_comm , pw_ok_answer , 3 ) ;
   if ( checklist == 3 )
+	  send2swarm_at_command ( pw_q_rate_at_comm , pw_0_answer , 4 ) ;
+  if ( checklist == 4 )
+	  send2swarm_at_command ( pw_mostrecent_at_comm , pw_mostrecent_answer , 5 ) ;
+  if ( checklist == 5 )
+	  send2swarm_at_command ( gn_0_at_comm , gn_ok_answer , 6 ) ;
+  if ( checklist == 6 )
+  	  send2swarm_at_command ( gn_q_rate_at_comm , gn_0_answer , 7 ) ;
+  if ( checklist == 7 )
+  	  send2swarm_at_command ( gn_mostrecent_at_comm , gn_mostrecent_answer , 8 ) ;
+  if ( checklist == 8 )
+  	  send2swarm_at_command ( mt_del_all_at_comm , mt_del_all_answer , 9 ) ;
+  if ( checklist == 9 )
 	  uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) good , strlen ( good ) , UART_TX_TIMEOUT ) ;
+  send2swarm_at_command ( sl_30s_at_comm , sl_ok_answer , 100 ) ; // Swarm sleep for 20s
+  HAL_Delay ( 5000 ) ;
+  HAL_PWREx_EnterSHUTDOWNMode () ; // Enter the SHUTDOWN mode
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_PWREx_EnterSHUTDOWNMode () ; // Enter the SHUTDOWN mode
+
   while ( 1 )
   {
 	  __NOP () ;
@@ -266,7 +296,7 @@ static void MX_RTC_Init(void)
 
   /** Enable the WakeUp
   */
-  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x500B, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 60, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
   {
     Error_Handler();
   }
@@ -296,7 +326,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 16000-1;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 250-1;
+  htim6.Init.Period = 500-1;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
