@@ -166,6 +166,7 @@ int main(void)
   __HAL_TIM_CLEAR_IT ( &htim6 , TIM_IT_UPDATE ) ; // żeby nie generować przerwania TIM6 od razu: https://stackoverflow.com/questions/71099885/why-hal-tim-periodelapsedcallback-gets-called-immediately-after-hal-tim-base-sta
 
   uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) hello , strlen ( hello ) , UART_TX_TIMEOUT ) ;
+  HAL_Delay ( 15000 ) ; // Wait for Swarm boot
   HAL_UARTEx_ReceiveToIdle_DMA ( &huart1 , rx_buff , sizeof ( rx_buff ) ) ;
   /* USER CODE END 2 */
 
