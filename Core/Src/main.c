@@ -57,36 +57,53 @@ uint8_t				waiting_for_answer		= 0 ;
 
 char                hello[]         		= "Hello! Test_Swarm_001_G071RB\n" ;
 char                good[]         			= "So far, so good !\n" ;
+char                stm32_shutdown[]        = "STM32_Shutdown" ;
+char                stm32_wakeup[]         	= "STM32 Wake Up" ;
 HAL_StatusTypeDef   uart_status ;
 uint8_t             rx_buff[RX_BUFF_SIZE] ;
 char				tx_buff[AT_COMM_TX_BUFF_SIZE] ;
 
 // SWARM AT Commands
+const char 			cs_at_comm[]			= "$CS" ;
 const char 			rt_0_at_comm[]			= "$RT 0" ;
 const char			rt_q_rate_at_comm[]		= "$RT ?" ;
 const char 			pw_0_at_comm[]			= "$PW 0" ;
 const char			pw_q_rate_at_comm[]		= "$PW ?" ;
 const char 			pw_mostrecent_at_comm[]	= "$PW @" ;
+const char 			dt_0_at_comm[]			= "$DT 0" ;
+const char			dt_q_rate_at_comm[]		= "$DT ?" ;
+const char 			gs_0_at_comm[]			= "$GS 0" ;
+const char			gs_q_rate_at_comm[]		= "$GS ?" ;
+const char 			gj_0_at_comm[]			= "$GJ 0" ;
+const char			gj_q_rate_at_comm[]		= "$GJ ?" ;
 const char 			gn_0_at_comm[]			= "$GN 0" ;
 const char			gn_q_rate_at_comm[]		= "$GN ?" ;
 const char 			gn_mostrecent_at_comm[]	= "$GN @" ;
 const char 			dt_mostrecent_at_comm[]	= "$DT @" ;
-const char 			sl_30s_at_comm[]		= "$SL S=30" ;
 const char 			mt_del_all_at_comm[]	= "$MT D=U" ;
+const char 			td_mzo_at_comm[]		= "$TD HD=300,\"MZO\"" ; // 5 minut na wysłanie wiadmości
+const char 			sl_3ks_at_comm[]		= "$SL S=3000" ; // 50 minut spania dla Swarm
 uint8_t				rt_unsolicited 			= 1 ;
 
 // SWARM AT Answers
+const char          cs_answer[]				= "$CS DI=0x" ;
 const char          rt_ok_answer[]			= "$RT OK*22" ;
 const char          rt_0_answer[]			= "$RT 0*16" ;
 const char          pw_ok_answer[]			= "$PW OK*23" ;
 const char          pw_0_answer[]			= "$PW 0*17" ;
 const char          pw_mostrecent_answer[]	= "$PW " ;
+const char          dt_ok_answer[]			= "$DT OK*34" ;
+const char          dt_0_answer[]			= "$DT 0*00" ;
+const char          gs_ok_answer[]			= "$GS OK*30" ;
+const char          gs_0_answer[]			= "$GS 0*04" ;
+const char          gj_ok_answer[]			= "$GJ OK*29" ;
+const char          gj_0_answer[]			= "$GJ 0*1d" ;
 const char          gn_ok_answer[]			= "$GN OK*2d" ;
 const char          gn_0_answer[]			= "$GN 0*19" ;
 const char          gn_mostrecent_answer[]	= "$GN " ;
-const char          dt_answer[]				= "$DT " ;
+const char 			mt_del_all_answer[]		= "$MT " ; // nie wiadomo ile ich będzie dlatego nie mogę ustawić "$MT 0*09"
+const char 			td_ok_answer[]			= "$TD OK," ;
 const char          sl_ok_answer[]			= "$SL OK*3b" ;
-const char 			mt_del_all_answer[]		= "$MT " ;
 
 /* USER CODE END PV */
 
@@ -150,28 +167,46 @@ int main(void)
 
   uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) hello , strlen ( hello ) , UART_TX_TIMEOUT ) ;
   HAL_UARTEx_ReceiveToIdle_DMA ( &huart1 , rx_buff , sizeof ( rx_buff ) ) ;
-  send2swarm_at_command ( rt_0_at_comm , rt_ok_answer , 1 ) ;
+  send2swarm_at_command ( cs_at_comm , cs_answer , 1 ) ;
   if ( checklist == 1 )
-	  send2swarm_at_command ( rt_q_rate_at_comm , rt_0_answer , 2 ) ; // Query RT rate
+	  send2swarm_at_command ( rt_0_at_comm , rt_ok_answer , 2 ) ;
   if ( checklist == 2 )
-  	  send2swarm_at_command ( pw_0_at_comm , pw_ok_answer , 3 ) ;
+	  send2swarm_at_command ( rt_q_rate_at_comm , rt_0_answer , 3 ) ; // Query RT rate
   if ( checklist == 3 )
-	  send2swarm_at_command ( pw_q_rate_at_comm , pw_0_answer , 4 ) ;
+  	  send2swarm_at_command ( pw_0_at_comm , pw_ok_answer , 4 ) ;
   if ( checklist == 4 )
-	  send2swarm_at_command ( pw_mostrecent_at_comm , pw_mostrecent_answer , 5 ) ;
+	  send2swarm_at_command ( pw_q_rate_at_comm , pw_0_answer , 5 ) ;
   if ( checklist == 5 )
-	  send2swarm_at_command ( gn_0_at_comm , gn_ok_answer , 6 ) ;
+	  send2swarm_at_command ( pw_mostrecent_at_comm , pw_mostrecent_answer , 6 ) ;
   if ( checklist == 6 )
-  	  send2swarm_at_command ( gn_q_rate_at_comm , gn_0_answer , 7 ) ;
+  	  send2swarm_at_command ( dt_0_at_comm , dt_ok_answer , 7 ) ;
   if ( checklist == 7 )
-  	  send2swarm_at_command ( gn_mostrecent_at_comm , gn_mostrecent_answer , 8 ) ;
+  	  send2swarm_at_command ( dt_q_rate_at_comm , dt_0_answer , 8 ) ;
   if ( checklist == 8 )
-  	  send2swarm_at_command ( mt_del_all_at_comm , mt_del_all_answer , 9 ) ;
+  	  send2swarm_at_command ( gs_0_at_comm , gs_ok_answer , 9 ) ;
   if ( checklist == 9 )
+   	  send2swarm_at_command ( gs_q_rate_at_comm , gs_0_answer , 10 ) ;
+  if ( checklist == 10 )
+	  send2swarm_at_command ( gj_0_at_comm , gj_ok_answer , 11 ) ;
+  if ( checklist == 11 )
+	  send2swarm_at_command ( gj_q_rate_at_comm , gj_0_answer , 12 ) ;
+  if ( checklist == 12 )
+	  send2swarm_at_command ( gn_0_at_comm , gn_ok_answer , 13 ) ;
+  if ( checklist == 13 )
+  	  send2swarm_at_command ( gn_q_rate_at_comm , gn_0_answer , 14 ) ;
+  if ( checklist == 14 )
+  	  send2swarm_at_command ( gn_mostrecent_at_comm , gn_mostrecent_answer , 15 ) ;
+  if ( checklist == 15 )
+  	  send2swarm_at_command ( mt_del_all_at_comm , mt_del_all_answer , 16 ) ;
+  if ( checklist == 16 )
+	  send2swarm_at_command ( td_mzo_at_comm , td_ok_answer , 17 ) ;
+  if ( checklist == 17 )
 	  uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) good , strlen ( good ) , UART_TX_TIMEOUT ) ;
-  send2swarm_at_command ( sl_30s_at_comm , sl_ok_answer , 100 ) ; // Swarm sleep for 20s
-  HAL_Delay ( 5000 ) ;
+  HAL_Delay ( 310000) ; // 5min. i 10 sekund obejmujące 5 minut na wysłanie wiadomości
+  send2swarm_at_command ( sl_3ks_at_comm , sl_ok_answer , 18 ) ; // Swarm sleep for 50 minutes
+  uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) stm32_shutdown , strlen ( stm32_shutdown ) , UART_TX_TIMEOUT ) ;
   HAL_PWREx_EnterSHUTDOWNMode () ; // Enter the SHUTDOWN mode
+  uart_status = HAL_UART_Transmit ( &huart2 , (const uint8_t *) stm32_wakeup , strlen ( stm32_wakeup ) , UART_TX_TIMEOUT ) ;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -296,7 +331,7 @@ static void MX_RTC_Init(void)
 
   /** Enable the WakeUp
   */
-  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 60, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 3600, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
   {
     Error_Handler();
   }
@@ -326,7 +361,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 16000-1;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 500-1;
+  htim6.Init.Period = 2000-1;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
@@ -558,7 +593,7 @@ void send2swarm_rt_0 ()
 void send2swarm_at_command ( const char* at_command , const char* answer , uint16_t step )
 {
 	uint8_t cs = nmea_checksum ( at_command , strlen ( at_command ) ) ;
-	char uart_tx_buff[10] ;
+	char uart_tx_buff[250] ;
 
 	sprintf ( (char*) uart_tx_buff , "%s*%02x\n" , at_command , cs ) ;
 	uart_status = HAL_UART_Transmit ( &huart1 , (const uint8_t *) uart_tx_buff ,  strlen ( (char*) uart_tx_buff ) , UART_TX_TIMEOUT ) ;
