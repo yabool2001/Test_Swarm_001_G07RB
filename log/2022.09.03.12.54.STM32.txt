@@ -5,3 +5,20 @@
 [2022-09-03 12:58:17.214] Hello! Test_Swarm_001_G071RB
 [2022-09-03 12:58:18.680] Hello! Test_Swarm_001_G071RB
 [2022-09-03 12:58:20.078] So far, so good !
+[2022-09-03 13:03:29.155] STM32_ShutdownHello! Test_Swarm_001_G071RB
+[2022-09-03 13:07:03.425] Hello! Test_Swarm_001_G071RB
+[2022-09-03 13:07:04.809] So far, so good !
+[2022-09-03 13:12:13.953] STM32_Shutdown
+[2022-09-03 13:12:35.674] Hello! Test_Swarm_001_G071RB
+[2022-09-03 13:12:41.882] Hello! Test_Swarm_001_G071RB
+[2022-09-03 13:12:43.085] So far, so good !
+[2022-09-03 13:17:52.185] STM32_Shutdown
+[2022-09-03 14:12:42.753] Hello! Test_Swarm_001_G071RB
+[2022-09-03 14:12:43.956] So far, so good !
+[2022-09-03 14:17:53.021] STM32_Shutdown
+[2022-09-03 14:34:02.888] Hello! Test_Swarm_001_G071RB
+[2022-09-03 14:34:04.012] Hello! Test_Swarm_001_G071RB
+[2022-09-03 14:34:05.520] So far, so good !
+[2022-09-03 14:35:10.056] Hello! Test_Swarm_001_G071RB
+[2022-09-03 14:35:11.164] Hello! Test_Swarm_001_G071RB
+[2022-09-03 14:35:12.578] So far, so good !
